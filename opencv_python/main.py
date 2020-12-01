@@ -3,6 +3,7 @@
 import cv2
 import sys
 import numpy as np
+from time import time
 
 import upscaler
 
@@ -15,10 +16,17 @@ def scale(frame, ratio, *, interpolation=cv2.INTER_AREA):
     return cv2.resize(frame, dim, interpolation=interpolation)
 
 
+def get_fps(timestamps):
+    timestamps.append(time())
+    last_times = timestamps[-10:]
+    return len(last_times) / (last_times[-1] - last_times[0])
+
+
 if __name__ == "__main__":
     cap = cv2.VideoCapture(sys.argv[1])
     window_fit_scale = None
-    upscaler = upscaler.OpenCV_Interpolation()
+    upscaler = upscaler.OpenCV_FSRCNN()
+    timestamps = [time()]
 
     while(True):
         # Capture frame-by-frame
@@ -38,6 +46,10 @@ if __name__ == "__main__":
         # Merge images
         merged = np.concatenate((frame, upscaled), axis=1)
 
+        # Display FPS
+        fps = get_fps(timestamps)
+        cv2.putText(merged, f"FPS: {fps:.2f}", (50, 50),
+                    cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255))
         # Display the resulting frame
         cv2.imshow("result", merged)
         # cv2.imshow("downscaled", downscaled)
