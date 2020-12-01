@@ -41,12 +41,17 @@ int main()
         }
 
         // Display the resulting frame
-        imshow("mainWin", frame);
-
-        // cv::Mat modifiedFrame;
+        // imshow("mainWin", frame);
         // frame.forEach<Pixel>(&modifyPixel);
-        // cv::resize(frame, modifiedFrame, cv::Size(1920, 1080), 0, 0, cv::INTER_AREA);
-        // imshow("mainWin", modifiedFrame);
+
+        cv::Mat downscaled;
+        cv::resize(frame, downscaled, cv::Size(), 0.25, 0.25, cv::INTER_AREA);
+        cv::Mat upscaled;
+        cv::resize(downscaled, upscaled, cv::Size(), 4, 4, cv::INTER_AREA);
+
+        cv::Mat concatenated;
+        cv::hconcat(frame, upscaled, concatenated);
+        imshow("mainWin", concatenated);
 
         // Press  ESC on keyboard to  exit
         char c = (char)cv::waitKey(1);
