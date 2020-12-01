@@ -24,7 +24,8 @@ OBJDIR				:=	.objects
 DEPDIR				:=	.dependencies
 
 # Libraries
-LIBNAME				:=	opencv_core opencv_highgui opencv_videoio
+# opencv_core opencv_highgui opencv_videoio opencv_imgproc opencv_highgui opencv_ml opencv_video opencv_features2d opencv_calib3d opencv_objdetect opencv_flann
+LIBNAME				:=	opencv_core opencv_highgui opencv_videoio opencv_imgproc
 LIBLOCATION			:=
 
 # C
