@@ -1,51 +1,46 @@
 #!/usr/bin/env python3
-#
+
 import cv2
-from cv2 import dnn_superres
-import sys
-import numpy as np
-
-screen = (1920, 1080)
-downscale_ratio = 2
-sr = dnn_superres.DnnSuperResImpl_create()
-sr.readModel("../FSRCNN-small_x2.pb")
-sr.setModel("fsrcnn", 2)
-sr.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-sr.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List
 
 
-def scale(frame, ratio, *, interpolation=cv2.INTER_AREA):
-	dim = (int(frame.shape[1] * ratio), int(frame.shape[0] * ratio))
-	return cv2.resize(frame, dim, interpolation=interpolation)
+class Upscaler(ABC):
+    @abstractmethod
+    def upscale(self, frame, scale: float):
+        pass
 
 
-if __name__ == "__main__":
-	cap = cv2.VideoCapture(sys.argv[1])
-	window_fit_scale = None
+@dataclass
+class ScaleError:
+    scale: float
+    supported: List[float]
 
-	while(True):
-		# Capture frame-by-frame
-		ret, frame = cap.read()
-		# Fit the frame to half the window
-		if not window_fit_scale:
-			window_fit_scale = screen[0] / 2.0 / frame.shape[1]
+    def __str__(self):
+        return f"This upscaler cannot upscale using scale {self.scale}." \
+            + f" Available: {self.supported}"
 
-		frame = scale(frame, window_fit_scale)
 
-		# downscale then upscale
-		downscaled = scale(frame, 1 / downscale_ratio)
-		upscaled = sr.upsample(downscaled)
-		# upscaled = scale(downscaled, downscale_ratio)
+class OpenCV_FSRCNN(Upscaler):
+    def __init__(self):
+        self.sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        self.sr.readModel("../FSRCNN-small_x2.pb")
+        self.sr.setModel("fsrcnn", 2)
+        self.sr.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        self.sr.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-		# Merge images
-		merged = np.concatenate((frame, upscaled), axis=1)
+    def upscale(self, frame, scale):
+        if scale != 2:
+            raise ScaleError(scale, [2.0])
+        return self.sr.upsample(frame)
 
-		# Display the resulting frame
-		cv2.imshow("result", merged)
-		# cv2.imshow("downscaled", downscaled)
-		if cv2.waitKey(1) & 0xFF == ord('q'):
-			break
 
-	# When everything done, release the capture
-	cap.release()
-	cv2.destroyAllWindows()
+def opencv_scale(frame, ratio, *, interpolation=cv2.INTER_AREA):
+    dim = (int(frame.shape[1] * ratio), int(frame.shape[0] * ratio))
+    return cv2.resize(frame, dim, interpolation=interpolation)
+
+
+class OpenCV_Interpolation(Upscaler):
+    def upscale(self, frame, scale):
+        return opencv_scale(frame, scale)
