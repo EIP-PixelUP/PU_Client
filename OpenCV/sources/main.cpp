@@ -10,6 +10,13 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 
+using Pixel = cv::Point3_<uint8_t>;
+
+static void modifyPixel(Pixel& pixel, const int* position [[ gnu::unused ]])
+{
+    pixel.x = 255;
+}
+
 int main()
 {
     // Create a VideoCapture object and use camera to capture the video
@@ -29,6 +36,8 @@ int main()
         if (frame.empty()) {
             break;
         }
+
+        frame.forEach<Pixel>(&modifyPixel);
 
         // Display the resulting frame
         imshow("Frame", frame);
