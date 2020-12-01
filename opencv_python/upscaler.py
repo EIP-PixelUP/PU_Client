@@ -25,7 +25,7 @@ class ScaleError:
 class OpenCV_FSRCNN(Upscaler):
     def __init__(self):
         self.sr = cv2.dnn_superres.DnnSuperResImpl_create()
-        self.sr.readModel("../FSRCNN-small_x2.pb")
+        self.sr.readModel("models/FSRCNN-small_x2.pb")
         self.sr.setModel("fsrcnn", 2)
         self.sr.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         self.sr.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
