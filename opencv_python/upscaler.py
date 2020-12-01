@@ -22,18 +22,32 @@ class ScaleError:
             + f" Available: {self.supported}"
 
 
-class OpenCV_FSRCNN(Upscaler):
-    def __init__(self):
+class OpenCV_SuperRes(Upscaler):
+    def __init__(self, filename, model_type, scale):
+        print(f"Using model: {filename} type: {model_type} scale: {scale}")
         self.sr = cv2.dnn_superres.DnnSuperResImpl_create()
-        self.sr.readModel("models/FSRCNN-small_x2.pb")
-        self.sr.setModel("fsrcnn", 2)
+        self.sr.readModel(f"models/{filename}")
+        self.sr.setModel(model_type, int(scale))
         self.sr.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         self.sr.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        self.scale = scale
 
     def upscale(self, frame, scale):
-        if scale != 2:
-            raise ScaleError(scale, [2.0])
+        if scale != self.scale:
+            raise ScaleError(scale, [self.scale])
         return self.sr.upsample(frame)
+
+
+class OpenCV_FSRCNN(OpenCV_SuperRes):
+    def __init__(self, scale, small=True):
+        small = "-small" if small else ""
+        model_name = f"FSRCNN{small}_x{scale}.pb"
+        super().__init__(model_name, "fsrcnn", scale)
+
+
+class OpenCV_ESPCN(OpenCV_SuperRes):
+    def __init__(self, scale):
+        super().__init__(f"ESPCN_x{scale}.pb", "espcn", scale)
 
 
 def opencv_scale(frame, ratio, *, interpolation=cv2.INTER_AREA):

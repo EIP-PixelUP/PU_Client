@@ -25,7 +25,7 @@ def get_fps(timestamps):
 if __name__ == "__main__":
     cap = cv2.VideoCapture(sys.argv[1])
     window_fit_scale = None
-    upscaler = upscaler.OpenCV_FSRCNN()
+    upscaler = upscaler.OpenCV_ESPCN(downscale_ratio)
     timestamps = [time()]
 
     while(True):
@@ -33,9 +33,7 @@ if __name__ == "__main__":
         ret, frame = cap.read()
         # Fit the frame to half the window
         if not window_fit_scale:
-            print(frame.shape)
             window_fit_scale = screen[0] / 2.0 / frame.shape[1]
-            print(window_fit_scale)
 
         frame = scale(frame, window_fit_scale)
 
