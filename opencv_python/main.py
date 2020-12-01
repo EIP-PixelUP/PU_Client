@@ -24,11 +24,14 @@ def get_fps(timestamps):
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(sys.argv[1])
+    framerate = 60
     window_fit_scale = None
     upscaler = upscaler.OpenCV_ESPCN(downscale_ratio)
     timestamps = [time()]
 
     while(True):
+        # Mesure time before operations
+        start_tp = time()
         # Capture frame-by-frame
         ret, frame = cap.read()
         # Fit the frame to half the window
@@ -50,8 +53,19 @@ if __name__ == "__main__":
                     cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255))
         # Display the resulting frame
         cv2.imshow("result", merged)
+
+        # Mesure time after operations
+        end_tp = time()
+
+        # Compute time to wait
+        remaining_time = 1000 * (1 / framerate) - (end_tp - start_tp)
+        time_to_wait = remaining_time
+
         # cv2.imshow("downscaled", downscaled)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if remaining_time <= 0:
+            time_to_wait = 0
+
+        if cv2.waitKey(int(time_to_wait)) & 0xFF == ord('q'):
             break
 
     # When everything done, release the capture
