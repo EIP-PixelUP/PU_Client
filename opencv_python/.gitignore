@@ -7,4 +7,3 @@ tmp/
 *.egg
 build
 htmlcov
-Pipfile.lock
