@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
-# Goal
+# As
+
+# I Want
 
 # Description
 
